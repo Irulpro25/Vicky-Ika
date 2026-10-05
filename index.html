@@ -2,8 +2,11 @@
 <html lang="id" prefix="og: https://ogp.me/ns#">
 <head>
 	<meta charset="UTF-8">
-		<link rel="icon" type="image/x-icon" href="KirimDigi.ico">
-<link rel="shortcut icon" href="KirimDigi.ico">
+	<link rel="icon" type="image/jpeg" href="https://i.pinimg.com/736x/d1/b7/89/d1b789dc9405d97a111254c9de599c85.jpg">
+<link rel="shortcut icon" type="image/jpeg" href="https://i.pinimg.com/736x/d1/b7/89/d1b789dc9405d97a111254c9de599c85.jpg">
+<link rel="apple-touch-icon" href="https://i.pinimg.com/736x/d1/b7/89/d1b789dc9405d97a111254c9de599c85.jpg">
+<script>/* Paksa favicon: hapus icon lama (KirimDigi.ico) lalu pasang icon baru */
+(function(){var ICON="https://i.pinimg.com/736x/d1/b7/89/d1b789dc9405d97a111254c9de599c85.jpg";function paksa(){try{document.querySelectorAll('link[rel="icon"],link[rel="shortcut icon"]').forEach(function(l){if(l.getAttribute('href')!==ICON)l.remove();});if(!document.querySelector('link[rel="icon"][href="'+ICON+'"]')){var a=document.createElement('link');a.rel='icon';a.type='image/jpeg';a.href=ICON;document.head.appendChild(a);}var s=document.querySelector('link[rel="shortcut icon"]');if(!s){s=document.createElement('link');s.rel='shortcut icon';s.type='image/jpeg';s.href=ICON;document.head.appendChild(s);}else s.href=ICON;var t=document.querySelector('link[rel="apple-touch-icon"]');if(t)t.href=ICON;}catch(e){}}if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',paksa);paksa();setTimeout(paksa,1000);})();</script>
 
 <!-- Optimasi Mesin Pencari oleh Rank Math - https://rankmath.com/ -->
 <title>The Wedding Of Vicky &amp; Ika</title>
@@ -191,15 +194,77 @@ var e=ttq._i[t]||[],n=0;n<ttq.methods.length;n++)ttq.setAndDefer(e,ttq.methods[n
 </script>
 <!-- TikTok Pixel Code End --><meta name="generator" content="Elementor 4.3.2; features: additional_custom_breakpoints; settings: css_print_method-external, google_font-enabled, font_display-swap">
 <script>
-document.addEventListener('DOMContentLoaded', function() {
+/* Fix motion video background: autoplay muted + play saat terlihat / setelah cover dibuka.
+   Tidak bergantung pada chunk background-video Elementor (bisa gagal load saat offline/file://). */
+(function(){
+  var VIDEO_URL = "https://hi.kekondangan.id/wp-content/uploads/2024/08/FRAGRANCE-BURGUNDY_2.mp4";
+  function setup(video){
+    if(!video || video.__motionFix) return;
+    video.__motionFix = true;
+    if(!video.getAttribute('src')){
+      var srcEl = video.querySelector('source');
+      if(srcEl && srcEl.getAttribute('src')) video.src = srcEl.getAttribute('src');
+      else video.src = VIDEO_URL;
+    }
+    video.muted = true;
+    video.defaultMuted = true;
+    video.setAttribute('muted','muted');
+    video.setAttribute('autoplay','autoplay');
+    video.setAttribute('playsinline','playsinline');
+    video.setAttribute('webkit-playsinline','webkit-playsinline');
+    video.loop = true;
+    video.preload = 'auto';
+  }
+  function coverTerbuka(){
+    return !(document.body && document.body.classList.contains('stop-scrolling'));
+  }
+  function tryPlay(video){
+    if(!video || !video.play) return;
+    if(!coverTerbuka()) return; // tunggu tombol buka undangan diklik
+    if(video.offsetParent === null && getComputedStyle(video).display === 'none') return;
+    var p = video.play();
+    if(p && p.catch) p.catch(function(){});
+  }
+  function playSemua(){
+    document.querySelectorAll('.elementor-background-video-container video').forEach(tryPlay);
+  }
+  function init(){
     var videos = document.querySelectorAll('.elementor-background-video-container video');
-    videos.forEach(function(video) {
-        video.setAttribute('muted', 'muted');
-        video.setAttribute('playsinline', 'playsinline');
-        video.setAttribute('autoplay', 'autoplay');
-        video.play();
+    if(!videos.length) return;
+    videos.forEach(function(video){
+      setup(video);
+      if('IntersectionObserver' in window){
+        try{
+          new IntersectionObserver(function(entries){
+            entries.forEach(function(en){
+              if(en.isIntersecting) tryPlay(video);
+            });
+          },{threshold:0.1}).observe(video);
+        }catch(e){}
+      }
+      video.addEventListener('canplay', function(){ tryPlay(video); });
+      video.addEventListener('loadeddata', function(){ tryPlay(video); });
+      // Saat tombol "Buka Undangan" diklik, cover hilang -> langsung play
+      document.addEventListener('click', function(e){
+        if(e.target && e.target.closest && e.target.closest('#tombolbuka')) {
+          setTimeout(playSemua, 400);
+          setTimeout(playSemua, 1600);
+        }
+      });
+      tryPlay(video);
     });
-});
+    ['touchstart','click','scroll'].forEach(function(ev){
+      document.addEventListener(ev, playSemua, {once:false, passive:true});
+    });
+    document.addEventListener('visibilitychange', function(){
+      if(!document.hidden) playSemua();
+    });
+    // Polling ringan: Elementor/lazy-load bisa me-replace <video>, pastikan tetap jalan
+    setInterval(playSemua, 3000);
+  }
+  if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
+  else init();
+})();
 </script>
 
 
@@ -1765,7 +1830,8 @@ let isYT = false;
 const discMusics = document.querySelectorAll(".elementor-icon-wrapper[id*=mute-sound] .elementor-icon i");
 const topSectionEl = document.querySelectorAll(".elementor-top-section");
 document.addEventListener('DOMContentLoaded', ()=>{
-    document.querySelector('.elementor-background-video-container video').removeAttribute('autoplay');
+    var bgv = document.querySelector('.elementor-background-video-container video');
+    if(bgv){ try{ bgv.pause(); }catch(e){} }
 })
 disableScroll();
 function hideAllSect(){
@@ -1792,7 +1858,25 @@ document.getElementById("tombolbuka").onclick=function(){
   showAllSect();
     jQuery("#cover").hide(1500,function(){
         //jQuery("#ytSound").animate({ bottom: "0px"}, 4000);
-    document.querySelector('.elementor-background-video-container video').play()
+    var bgv = document.querySelector('.elementor-background-video-container video');
+    if(bgv){
+      try{
+        bgv.muted = true;
+        bgv.defaultMuted = true;
+        bgv.setAttribute('muted','muted');
+        bgv.setAttribute('autoplay','autoplay');
+        bgv.setAttribute('playsinline','playsinline');
+        bgv.setAttribute('webkit-playsinline','webkit-playsinline');
+        bgv.loop = true;
+        if(!bgv.getAttribute('src') && !bgv.querySelector('source')){
+          bgv.src = "https://hi.kekondangan.id/wp-content/uploads/2024/08/FRAGRANCE-BURGUNDY_2.mp4";
+        }
+        // JANGAN panggil bgv.load() di sini: load() me-reset buffer dan
+        // membuat play() langsung setelahnya gagal (race). Cukup play().
+        var pr = bgv.play();
+        if(pr && pr.catch) pr.catch(function(err){ console.log('video play ditunda:', err); });
+      }catch(e){ console.log(e); }
+    }
     });
 };
 discMusics.forEach((disc) => {
@@ -1865,9 +1949,9 @@ function _pauseAudio(){
 						</div>
 				</div>
 				</div>
-		<div class="elementor-element elementor-element-17f065c5 e-con-full e-flex e-con e-child" data-id="17f065c5" data-element_type="container" data-e-type="container" data-settings="{&quot;background_background&quot;:&quot;video&quot;,&quot;background_video_link&quot;:&quot;&quot;,&quot;background_video_start&quot;:0,&quot;background_video_end&quot;:20,&quot;background_play_once&quot;:&quot;yes&quot;,&quot;background_play_on_mobile&quot;:&quot;yes&quot;,&quot;background_privacy_mode&quot;:&quot;yes&quot;,&quot;jet_parallax_layout_list&quot;:[]}">
+		<div class="elementor-element elementor-element-17f065c5 e-con-full e-flex e-con e-child" data-id="17f065c5" data-element_type="container" data-e-type="container" data-settings="{&quot;background_background&quot;:&quot;video&quot;,&quot;background_video_link&quot;:&quot;https:\/\/hi.kekondangan.id\/wp-content\/uploads\/2024\/08\/FRAGRANCE-BURGUNDY_2.mp4&quot;,&quot;background_play_on_mobile&quot;:&quot;yes&quot;,&quot;jet_parallax_layout_list&quot;:[]}">
 		<div class="elementor-background-video-container">
-							<video class="elementor-background-video-hosted" role="presentation" autoplay="" muted="" playsinline=""></video>
+							<video class="elementor-background-video-hosted elementor-html5-video" role="presentation" autoplay muted playsinline loop preload="auto" poster="./wp-content/uploads/2024/08/FRAGRANCE-BURGUNDY-FALLBACK.jpg" src="https://hi.kekondangan.id/wp-content/uploads/2024/08/FRAGRANCE-BURGUNDY_2.mp4"><source src="https://hi.kekondangan.id/wp-content/uploads/2024/08/FRAGRANCE-BURGUNDY_2.mp4" type="video/mp4"></video>
 					</div><div class="elementor-element elementor-element-6a86ced5 e-con-full e-flex e-con e-child" data-id="6a86ced5" data-element_type="container" data-e-type="container" data-settings="{&quot;background_background&quot;:&quot;classic&quot;,&quot;jet_parallax_layout_list&quot;:[]}">
 				<div class="elementor-element elementor-element-690f52b8 elementor-widget elementor-widget-spacer" data-id="690f52b8" data-element_type="widget" data-e-type="widget" data-widget_type="spacer.default">
 				<div class="elementor-widget-container">
